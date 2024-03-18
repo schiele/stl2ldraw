@@ -1,0 +1,113 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  release:
+    types: [created]
+
+jobs:
+  build_tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install OpenSCAD
+      run: sudo apt-get install -y openscad
+    - uses: actions/checkout@v4
+    - name: build
+      run: make -j $(nproc)
+    - name: Publish Testcases
+      uses: actions/upload-artifact@v4
+      with:
+        name: stl2ldraw-tests
+        path: |
+          *.stl
+    - name: Upload Release Binaries
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.MY_SECRET }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: testb.stl
+        asset_name: stl2ldraw-${{ github.event.release.tag_name }}.stl
+        asset_content_type: model/stl
+  build_posix:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04, macos-14, macos-13, macos-12, macos-11]
+    runs-on: ${{ matrix.os }}
+    needs: build_tests
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download test artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: stl2ldraw-tests
+        path: tests
+    - name: build
+      run: |
+        cp tests/*.stl .
+        make -j $(nproc)
+    - name: Publish Result
+      uses: actions/upload-artifact@v4
+      with:
+        name: stl2ldraw-${{ matrix.os }}
+        path: |
+          stl2ldraw
+          *.stl
+          *.dat
+    - name: Upload Release Binaries
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.MY_SECRET }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: stl2ldraw
+        asset_name: stl2ldraw-${{ matrix.os }}-${{ github.event.release.tag_name }}
+        asset_content_type: application/x-elf
+  build_windows:
+    strategy:
+      matrix:
+        os: [windows-2022, windows-2019]
+    runs-on: ${{ matrix.os }}
+    needs: build_tests
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download test.stl artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: stl2ldraw-tests
+        path: tests
+    - name: Compile stl2ldraw.c using Visual Studio compiler
+      shell: cmd
+      run: |
+        for /f "delims=" %%i in ('vswhere -latest -property installationPath') do set "VS_PATH=%%i"
+        call "%VS_PATH%\Common7\Tools\VsDevCmd.bat"
+        cl /Fe:stl2ldraw stl2ldraw.c
+    - name: Run stl2ldraw.exe
+      shell: powershell
+      run: |
+        copy tests/*.stl .
+        .\stl2ldraw.exe testa.stl testa.dat
+        .\stl2ldraw.exe testb.stl testb.dat
+    - name: Publish Result
+      uses: actions/upload-artifact@v4
+      with:
+        name: stl2ldraw-${{ matrix.os }}
+        path: |
+          stl2ldraw.exe
+          *.stl
+          *.dat
+    - name: Upload Release Binaries
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.MY_SECRET }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: stl2ldraw.exe
+        asset_name: stl2ldraw-${{ matrix.os }}-${{ github.event.release.tag_name }}.exe
+        asset_content_type: application/x-msdownload
