@@ -1,11 +1,20 @@
 CFLAGS := -g -O2 -Wall -Wextra -Werror
 LDLIBS := -lm
 
-test.dat: stl2ldraw test.stl
-	./$^ $@
+TESTS := testa.dat testb.dat
 
-test.stl: test.scad
+all: $(TESTS)
+
+$(TESTS): stl2ldraw
+
+%.dat: %.stl
+	./stl2ldraw $< $@
+
+testa.stl: test.scad
+	openscad --hardwarnings --export-format asciistl -o $@ $^
+
+testb.stl: test.scad
 	openscad --hardwarnings --export-format binstl -o $@ $^
 
 clean:
-	rm -f stl2ldraw stl2ldraw.o test.stl test.dat
+	rm -f stl2ldraw *.o *.stl *.dat

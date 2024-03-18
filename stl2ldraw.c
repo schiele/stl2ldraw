@@ -1,3 +1,23 @@
+/*
+ * stl2ldraw --- convert stl files to LDraw dat files
+ * Copyright (C) 2024  Robert Schiele <rschiele@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#define _USE_MATH_DEFINES
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -159,10 +179,10 @@ static float readnum(FILE* file) {
             continue;
         } else {
             fprintf(stderr, "Number too long.\n");
-            return 0.0 / 0.0;
+            return nanf("");
         }
     }
-    return 0.0 / 0.0;
+    return nanf("");
 }
 
 static bool readendline(FILE* file, char* buf) {
@@ -207,6 +227,7 @@ static bool isconvexquad(struct data* d, uint32_t t, int e) {
 static void swap(void* p, int n) {
     (void)p;
     (void)n;
+#ifndef _WIN32
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     char* c = p;
     char buf;
@@ -215,6 +236,7 @@ static void swap(void* p, int n) {
         c[i] = c[n-1-i];
         c[n-1-i] = buf;
     }
+#endif
 #endif
 }
 
