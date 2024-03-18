@@ -1,0 +1,4 @@
+stl2ldraw
+*.o
+*.stl
+*.dat
