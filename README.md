@@ -24,6 +24,6 @@ But in the end this was a weekend hack so far that actually works.
 - Generates lines for sharp edges (more than 25 degrees angle) and
   open edges.
 - Generates optional lines for soft convex edges (less than 25 degrees
-  angle). For concave edges they are not generates since they would
+  angle). For concave edges, they are not generated since they would
   never be visible by their concave nature anyway.
 
