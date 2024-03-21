@@ -243,7 +243,7 @@ static void swap(void* p, int n) {
 static struct data* allocdata(uint32_t n) {
     struct data* d = calloc(1, sizeof(struct data));
     d->p = calloc(3*3*n, sizeof(float));
-    d->e = calloc(3*n, sizeof(struct edge));
+    d->e = 0;
     d->t = calloc(n, sizeof(struct triangle));
     d->pc = 0;
     d->ec = 0;
@@ -255,9 +255,19 @@ static void addtriangle(struct data* d, struct stltriangle* t) {
     calcnormal(d->t[d->tc].n, t);
     for(int j=0; j<3; ++j)
         d->t[d->tc].p[j] = storept(d, t->v[j]);
-    for(int j=0; j<3; ++j)
-        d->t[d->tc].e[j] = storeedge(d, d->t[d->tc].p[j], d->t[d->tc].p[(j+1)%3], d->t[d->tc].p[(j+2)%3]);
     ++(d->tc);
+}
+
+static void calcedges(struct data* d) {
+    d->ec = 0;
+    if (d->e)
+        free(d->e);
+    d->e = calloc(3*d->tc, sizeof(struct edge));
+    for (uint32_t i=0; i<d->tc; ++i)
+        for(int j=0; j<3; ++j)
+            d->t[i].e[j] = storeedge(d, d->t[i].p[j], d->t[i].p[(j+1)%3], d->t[i].p[(j+2)%3]);
+    for (uint32_t i=0; i<d->ec; ++i)
+        d->e[i].angle = angle(d, i);
 }
 
 static struct data* readstl(char* filename) {
@@ -338,8 +348,7 @@ static struct data* readstl(char* filename) {
         }
     }
     fclose(file);
-    for (uint32_t i=0; i<d->ec; ++i)
-        d->e[i].angle = angle(d, i);
+    calcedges(d);
     return d;
 }
 
