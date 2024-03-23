@@ -305,8 +305,8 @@ static struct data* readstl(char* filename) {
                 fprintf(stderr, "Error reading triangle %u.\n", i);
                 return 0;
             }
-            for (int j=0; j<48; j+=4)
-                swap((&t)+j, sizeof(float));
+            for (int j=0; j<12; ++j)
+                swap(((float*)&t)+j, sizeof(float));
             swap(&t.a, sizeof(uint16_t));
             addtriangle(d, &t);
         }
@@ -372,8 +372,8 @@ static void writebinstl(struct data* d, char* filename) {
             for (int k=0; k<3; ++k)
                 t.v[j][k] = d->p[d->t[i].p[j]*3+k];
         t.a = 0;
-        for (int j=0; j<48; j+=4)
-            swap((&t)+j, sizeof(float));
+        for (int j=0; j<12; ++j)
+            swap(((float*)&t)+j, sizeof(float));
         swap(&t.a, sizeof(uint16_t));
         fwrite(&t, 50, 1, file);
     }
