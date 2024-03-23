@@ -104,15 +104,15 @@ static uint32_t storept(struct data* d, float* p) {
     return d->pc++;
 }
 
-static uint32_t storeedge(struct data* d, uint32_t p0, uint32_t p1, uint32_t p2) {
+static uint32_t storeedge(struct data* d, uint32_t t, uint32_t p0, uint32_t p1, uint32_t p2) {
     for (uint32_t i=0; i<d->ec; ++i) {
         if (p0 == d->e[i].p[0] && p1 == d->e[i].p[1]) {
-            d->e[i].t[0] = (d->e[i].t[0] == NOTRIANGLE) ? d->tc : AMBTRIANGLE;
+            d->e[i].t[0] = (d->e[i].t[0] == NOTRIANGLE) ? t : AMBTRIANGLE;
             d->e[i].p[2] = p2;
             return i;
         }
         if (p0 == d->e[i].p[1] && p1 == d->e[i].p[0]) {
-            d->e[i].t[1] = (d->e[i].t[1] == NOTRIANGLE) ? d->tc : AMBTRIANGLE;
+            d->e[i].t[1] = (d->e[i].t[1] == NOTRIANGLE) ? t : AMBTRIANGLE;
             d->e[i].p[3] = p2;
             return i;
         }
@@ -120,7 +120,7 @@ static uint32_t storeedge(struct data* d, uint32_t p0, uint32_t p1, uint32_t p2)
     d->e[d->ec].p[0] = p0;
     d->e[d->ec].p[1] = p1;
     d->e[d->ec].p[2] = p2;
-    d->e[d->ec].t[0] = d->tc;
+    d->e[d->ec].t[0] = t;
     d->e[d->ec].t[1] = NOTRIANGLE;
     return d->ec++;
 }
@@ -265,7 +265,7 @@ static void calcedges(struct data* d) {
     d->e = calloc(3*d->tc, sizeof(struct edge));
     for (uint32_t i=0; i<d->tc; ++i)
         for(int j=0; j<3; ++j)
-            d->t[i].e[j] = storeedge(d, d->t[i].p[j], d->t[i].p[(j+1)%3], d->t[i].p[(j+2)%3]);
+            d->t[i].e[j] = storeedge(d, i, d->t[i].p[j], d->t[i].p[(j+1)%3], d->t[i].p[(j+2)%3]);
     for (uint32_t i=0; i<d->ec; ++i)
         d->e[i].angle = angle(d, i);
 }
