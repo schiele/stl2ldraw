@@ -156,4 +156,3 @@ jobs:
           stl2ldraw-${{ steps.tagname.outputs.tagname }}-windows-2019
           stl2ldraw-${{ steps.tagname.outputs.tagname }}-windows-2022
         token: ${{ secrets.MY_SECRET }}
-        prerelease: true
